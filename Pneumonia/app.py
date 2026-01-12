@@ -17,10 +17,10 @@ st.title('Pneumonia classification')
 st.header('Please upload a chest X-ray image')
 
 # upload file
-file = st.file_uploader('', type=['jpeg', 'jpg', 'png'])
+file = st.file_uploader('./images/', type=['jpeg', 'jpg', 'png'])
 
 # Verificar se o arquivo do modelo existe
-model_path = './model/pneumonia_classifier.h5'
+model_path = './keras_model.h5'
 if not os.path.exists(model_path):
     st.error(f"❌ Arquivo do modelo não encontrado em: {model_path}")
     st.stop()
@@ -63,3 +63,4 @@ if file is not None:
         
     except Exception as e:
         st.error(f"❌ Erro ao processar imagem: {str(e)}")
+
