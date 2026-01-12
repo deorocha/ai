@@ -6,10 +6,6 @@ from PIL import Image
 import numpy as np
 import os
 
-from util import classify, set_background
-
-#set_background('./bgs/bg5.png')
-
 # set title
 st.title('Pneumonia classification')
 
@@ -63,4 +59,5 @@ if file is not None:
         
     except Exception as e:
         st.error(f"❌ Erro ao processar imagem: {str(e)}")
+
 
