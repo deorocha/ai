@@ -5,6 +5,11 @@ from tensorflow.keras.models import load_model
 from PIL import Image
 import numpy as np
 import os
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).parent
+FILES_IMAGES = PROJECT_ROOT / "images"
+FILES_MODELS = PROJECT_ROOT / "models"
 
 # set title
 st.title('Pneumonia classification')
@@ -13,10 +18,10 @@ st.title('Pneumonia classification')
 st.header('Please upload a chest X-ray image')
 
 # upload file
-file = st.file_uploader('./images/', type=['jpeg', 'jpg', 'png'])
+file = st.file_uploader(FILES_IMAGES, type=['jpeg', 'jpg', 'png'])
 
 # Verificar se o arquivo do modelo existe
-model_path = './keras_model.h5'
+model_path = FILES_MODELS
 if not os.path.exists(model_path):
     st.error(f"❌ Arquivo do modelo não encontrado em: {model_path}")
     st.stop()
@@ -35,7 +40,7 @@ except Exception as e:
 
 # load class names
 try:
-    with open('./model/labels.txt', 'r') as f:
+    with open(FILES_MODELS + '/labels.txt', 'r') as f:
         class_names = [a[:-1].split(' ')[1] for a in f.readlines()]
     st.success(f"✅ Classes carregadas: {class_names}")
 except Exception as e:
@@ -59,5 +64,6 @@ if file is not None:
         
     except Exception as e:
         st.error(f"❌ Erro ao processar imagem: {str(e)}")
+
 
 
