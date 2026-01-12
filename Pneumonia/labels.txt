@@ -1,2 +1,0 @@
-0 pneumonia
-1 normal
