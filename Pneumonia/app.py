@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent
-FILES_IMAGES = PROJECT_ROOT / "images" / "normal"
+FILES_IMAGES = PROJECT_ROOT / "images"
 FILES_MODELS = PROJECT_ROOT / "models"
 
 # set title
