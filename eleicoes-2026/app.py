@@ -250,7 +250,7 @@ st.sidebar.header("Abrangência")
 abrangencia = st.sidebar.radio(
     "Nível de análise:",
     list(ARQUIVOS.keys()),
-    index=1,
+    index=0,
 )
 
 arquivo, chave = ARQUIVOS[abrangencia]
