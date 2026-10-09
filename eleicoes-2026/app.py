@@ -7,6 +7,10 @@ Rodar:
 
 Dependências:
     pip install streamlit pandas numpy plotly geopandas geobr
+
+CSVs utilizados (em ./resultados/):
+    - previsao_2T_2026_estado.csv     (nível "Estadual")
+    - previsao_2T_2026_municipio.csv  (níveis "Geral (Brasil)" e "Municipal")
 """
 
 import os
@@ -81,20 +85,19 @@ COR_LULA   = "#d62728"  # vermelho
 COR_FLAVIO = "#1f77b4"  # azul
 COR_SEM    = "#d9d9d9"  # cinza
 
+# Apenas 2 arquivos são necessários:
+#   - estado.csv     → nível "Estadual"
+#   - municipio.csv  → níveis "Geral (Brasil)" e "Municipal"
 ARQUIVOS = {
     "Geral (Brasil)": ("previsao_2T_2026_municipio.csv", "nacional"),
     "Estadual":       ("previsao_2T_2026_estado.csv",    "estado"),
     "Municipal":      ("previsao_2T_2026_municipio.csv", "municipio"),
-    "Por Zona":       ("previsao_2T_2026_zona.csv",      "zona"),
-    "Por Seção":      ("previsao_2T_2026_secao.csv",     "secao"),
 }
 
 LIMITE_TABELA = {
     "nacional":  10000,
     "estado":    10000,
     "municipio": 20000,
-    "zona":      20000,
-    "secao":     20000,
 }
 
 # ------------------------------------------------------------------
@@ -263,9 +266,9 @@ if df is None:
 
 df = adiciona_vencedor(df)
 
-# Filtro por UF para os níveis com granularidade fina
+# Filtro por UF (apenas para o nível Municipal)
 uf_sel = None
-if chave in ("municipio", "zona", "secao") and "SG_UF" in df.columns:
+if chave == "municipio" and "SG_UF" in df.columns:
     ufs = sorted(df["SG_UF"].dropna().unique().tolist())
     escolha = st.sidebar.selectbox("Filtrar por UF:", ["Todas"] + ufs)
     if escolha != "Todas":
@@ -282,7 +285,7 @@ with st.sidebar.expander("📖 Metodologia da projeção", expanded=False):
 ### Em uma frase
 Aplicamos aos votos do 1º turno de 2026 a **variação (swing) que cada
 candidato teve entre o 1º e o 2º turno de 2022**, calculada na mesma
-geografia (país, estado, município, zona ou seção).
+geografia (país, estado ou município).
 
 ---
 
@@ -294,7 +297,7 @@ geografia (país, estado, município, zona ou seção).
 
 **2. Cálculo do swing em 2022, por geografia**
 
-Para cada candidato, na mesma unidade geográfica (ex.: seção):
+Para cada candidato, na mesma unidade geográfica (ex.: município):
 
 $$
 \\text{share}_{1T} = \\frac{\\text{votos do candidato no 1T}}
@@ -363,10 +366,6 @@ share projetado**:
 - 🔵 **Azul** → Flávio Bolsonaro
 - ⚪ **Cinza** → sem dados suficientes para projetar
 
-Zonas e seções **não possuem coordenadas geográficas** nos dados do TSE.
-Por isso, nos níveis *Por Zona* e *Por Seção*, o mapa mostra a
-**agregação por estado** e o detalhamento fica na tabela abaixo.
-
 ---
 
 ### Limitações
@@ -378,7 +377,7 @@ Por isso, nos níveis *Por Zona* e *Por Seção*, o mapa mostra a
 - Ignora mudanças de cenário entre 2022 e 2026: alianças estaduais,
   rejeição, abstenção, votos brancos/nulos e entrada/saída de
   eleitores.
-- Regiões com **poucos votos** (seções pequenas) tendem a swing
+- Regiões com **poucos votos** (municípios pequenos) tendem a swing
   ruidoso — interprete com cautela.
 - A estimativa de votos absolutos depende da relação
   *válidos 2T / válidos 1T* de 2022, que pode não se repetir em 2026.
@@ -492,6 +491,8 @@ else:
     if chave == "nacional":
         try:
             with st.spinner("Cruzando municípios com dados do TSE…"):
+                # "Geral (Brasil)" reutiliza o CSV municipal para colorir
+                # todos os municípios do país.
                 df_mun = adiciona_vencedor(carregar(ARQUIVOS["Municipal"][0]))
                 df_mun["nome_norm"] = df_mun["NM_MUNICIPIO"].apply(normaliza)
                 df_mun["uf_norm"]   = df_mun["SG_UF"].astype(str).str.upper()
@@ -562,7 +563,7 @@ else:
             st.error(f"Erro ao montar o mapa estadual: {e}")
 
     # ---------- Municipal ----------
-    elif chave == "municipio":
+    else:
         if uf_sel is None:
             st.info("Selecione uma UF no menu lateral para carregar o mapa de municípios.")
         else:
@@ -606,53 +607,10 @@ else:
             except Exception as e:
                 st.error(f"Erro ao montar o mapa de municípios: {e}")
 
-    # ---------- Zona / Seção (agrega por UF) ----------
-    else:
-        st.info(
-            "Zonas e seções **não têm coordenadas geográficas** nos dados do TSE. "
-            "Por isso, o mapa mostra a **agregação por estado**; a tabela abaixo "
-            "traz o detalhamento por zona/seção."
-        )
-        try:
-            agg = (df.groupby("SG_UF", as_index=False)
-                     .agg(v_lula=("v_lula_2T_prev", "sum"),
-                          v_flavio=("v_flavio_2T_prev", "sum")))
-            agg["total"] = agg["v_lula"] + agg["v_flavio"]
-            agg["share_lula_2T_prev"]   = agg["v_lula"]   / agg["total"].replace(0, np.nan)
-            agg["share_flavio_2T_prev"] = agg["v_flavio"] / agg["total"].replace(0, np.nan)
-            agg["vencedor"] = np.where(
-                agg["share_lula_2T_prev"] >= agg["share_flavio_2T_prev"],
-                "Lula", "Flávio"
-            )
-            agg = agg.rename(columns={
-                "v_lula":   "v_lula_2T_prev",
-                "v_flavio": "v_flavio_2T_prev",
-            })
-
-            gdf = geo_estados().copy()
-            d = gdf.merge(agg, left_on="abbrev_state", right_on="SG_UF", how="left")
-            d["vencedor"] = d["vencedor"].fillna("Sem dados")
-            d = d.reset_index(drop=True)
-            d["_fid"] = d.index.astype(str)
-
-            fig = mapa_choropleth(
-                d, "_fid", "abbrev_state",
-                {
-                    "share_lula_2T_prev":   ":.2%",
-                    "share_flavio_2T_prev": ":.2%",
-                    "v_lula_2T_prev":       ":,.0f",
-                    "v_flavio_2T_prev":     ":,.0f",
-                },
-                "Vencedor projetado por estado (agregado)",
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        except Exception as e:
-            st.error(f"Erro ao montar o mapa: {e}")
-
 # ---- TABELA ----
 st.subheader("Detalhamento")
 
-cols_pref = ["SG_UF", "NM_MUNICIPIO", "NR_ZONA", "NR_SECAO",
+cols_pref = ["SG_UF", "NM_MUNICIPIO",
              "validos_1T_26",
              "share_lula_2T_prev", "share_flavio_2T_prev",
              "v_lula_2T_prev", "v_flavio_2T_prev",
@@ -675,8 +633,6 @@ if len(df_show) > limite:
 col_cfg = {
     "SG_UF":                st.column_config.TextColumn("UF"),
     "NM_MUNICIPIO":         st.column_config.TextColumn("Município"),
-    "NR_ZONA":              st.column_config.TextColumn("Zona"),
-    "NR_SECAO":             st.column_config.TextColumn("Seção"),
     "validos_1T_26":        st.column_config.NumberColumn("Válidos 1T 2026", format="%d"),
     "share_lula_2T_prev":   st.column_config.NumberColumn("Share Lula 2T",   format="%.4f"),
     "share_flavio_2T_prev": st.column_config.NumberColumn("Share Flávio 2T", format="%.4f"),
