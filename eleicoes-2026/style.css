@@ -13,10 +13,11 @@
 
 /* 2) Espaço acima do título principal (h1) */
 h1 {
+    font-size: 1.8rem !important;
+    line-height: 1.15 !important;
     margin-top: 0 !important;
     padding-top: 0 !important;
     margin-bottom: 0.25rem !important;
-    font-size: 0.25rem !important;
 }
 
 /* 3) Espaço acima/abaixo dos subheaders (h2, h3) */
