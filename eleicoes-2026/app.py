@@ -21,6 +21,14 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
+import streamlit_analytics2 as streamlit_analytics
+
+# Inicia o rastreamento (recomenda-se configurar uma senha para proteger o dashboard)
+with streamlit_analytics.track():
+    st.title("Minha Página no Streamlit Cloud")
+    st.write("Bem-vindo ao meu aplicativo!")
+    # O contador e os dados ficam visíveis adicionando "?analytics=on" na URL do seu app
+
 # ------------------------------------------------------------------
 # CONFIG
 # ------------------------------------------------------------------
