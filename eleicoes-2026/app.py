@@ -25,8 +25,8 @@ import streamlit_analytics2 as streamlit_analytics
 
 # Inicia o rastreamento (recomenda-se configurar uma senha para proteger o dashboard)
 with streamlit_analytics.track():
-    st.title("Minha Página no Streamlit Cloud")
-    st.write("Bem-vindo ao meu aplicativo!")
+    st.title("🗳️ Projeção do 2º Turno — 2026")
+    st.caption("Lula × Flávio Bolsonaro — swing de 2022 aplicado ao 1º turno de 2026")
     # O contador e os dados ficam visíveis adicionando "?analytics=on" na URL do seu app
 
 # ------------------------------------------------------------------
@@ -268,8 +268,6 @@ def mapa_choropleth(gdf, col_id, nome_hover, cols_hover, titulo=None,
 # ------------------------------------------------------------------
 # APP
 # ------------------------------------------------------------------
-st.title("🗳️ Projeção do 2º Turno — 2026")
-st.caption("Lula × Flávio Bolsonaro — swing de 2022 aplicado ao 1º turno de 2026")
 
 # ---- SIDEBAR ----
 st.sidebar.header("Abrangência")
