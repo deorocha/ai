@@ -23,12 +23,6 @@ import plotly.express as px
 
 import streamlit_analytics2 as streamlit_analytics
 
-# Inicia o rastreamento (recomenda-se configurar uma senha para proteger o dashboard)
-with streamlit_analytics.track():
-    st.title("🗳️ Projeção do 2º Turno — 2026")
-    st.caption("Lula × Flávio Bolsonaro — swing de 2022 aplicado ao 1º turno de 2026")
-    # O contador e os dados ficam visíveis adicionando "?analytics=on" na URL do seu app
-
 # ------------------------------------------------------------------
 # CONFIG
 # ------------------------------------------------------------------
@@ -155,7 +149,6 @@ def geo_municipios_uf(uf, versao=VERSAO_GEO):
         pass
     return gdf
 
-
 # ------------------------------------------------------------------
 # UTIL
 # ------------------------------------------------------------------
@@ -163,7 +156,6 @@ def normaliza(s):
     return (unicodedata.normalize("NFKD", str(s))
             .encode("ASCII", "ignore").decode("ASCII")
             .lower().strip())
-
 
 def adiciona_vencedor(df):
     df = df.copy()
@@ -179,7 +171,6 @@ def adiciona_vencedor(df):
     )
     return df
 
-
 def tem_geo():
     try:
         import geobr        # noqa
@@ -188,12 +179,10 @@ def tem_geo():
     except Exception:
         return False
 
-
 def fmt_int(x):
     if pd.isna(x):
         return "—"
     return f"{int(round(x)):,}".replace(",", ".")
-
 
 def mapa_choropleth(gdf, col_id, nome_hover, cols_hover, titulo=None,
                     height=650, auto_zoom=False):
@@ -268,6 +257,12 @@ def mapa_choropleth(gdf, col_id, nome_hover, cols_hover, titulo=None,
 # ------------------------------------------------------------------
 # APP
 # ------------------------------------------------------------------
+
+# Inicia o rastreamento (recomenda-se configurar uma senha para proteger o dashboard)
+with streamlit_analytics.track():
+    st.title("🗳️ Projeção do 2º Turno — 2026")
+    st.caption("Lula × Flávio Bolsonaro — swing de 2022 aplicado ao 1º turno de 2026")
+    # O contador e os dados ficam visíveis adicionando "?analytics=on" na URL do seu app
 
 # ---- SIDEBAR ----
 st.sidebar.header("Abrangência")
